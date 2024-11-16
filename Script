@@ -1,0 +1,83 @@
+local library = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/ShaddowScripts/Main/main/Library"))()
+
+local Main = library:CreateWindow("Main","Crimson")
+
+local tab = Main:CreateTab("Cheats")
+local tab2 = Main:CreateTab("Misc")
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Function to create ESP for players
+local function createPlayerESP()
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= player then -- Don't ESP yourself
+            local BillboardGui = Instance.new('BillboardGui')
+            local TextLabel = Instance.new('TextLabel')
+
+            BillboardGui.Parent = v.Character:WaitForChild("HumanoidRootPart")
+            BillboardGui.AlwaysOnTop = true
+            BillboardGui.Size = UDim2.new(0, 100, 0, 50)
+            BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
+
+            TextLabel.Parent = BillboardGui
+            TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+            TextLabel.BackgroundTransparency = 1
+            TextLabel.Size = UDim2.new(1, 0, 1, 0)
+            TextLabel.Text = v.Name
+            TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TextLabel.TextScaled = true
+        end
+    end
+end
+
+tab:CreateButton("Food Esp", function(a)
+    items = game:GetService("Workspace").GameObjects.Physical.Items
+    for i, v in pairs(items:GetDescendants()) do
+        if v:IsA("MeshPart") then
+            if true then
+                local BillboardGui = Instance.new('BillboardGui')
+                local TextLabel = Instance.new('TextLabel')
+                
+                BillboardGui.Parent = v.Parent
+                BillboardGui.AlwaysOnTop = true
+                BillboardGui.Size = UDim2.new(0, 50, 0, 50)
+                BillboardGui.Enabled = true
+                BillboardGui.Active = true
+                BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
+                
+                TextLabel.Parent = BillboardGui
+                TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+                TextLabel.BackgroundTransparency = 1
+                TextLabel.Size = UDim2.new(1, 0, 1, 0)
+                TextLabel.Text = "[ " .. tostring(v.Parent) .. " ]"
+                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextLabel.TextScaled = false  
+            end
+        end
+    end
+end)
+
+-- Button to activate Player ESP
+tab:CreateButton("Player ESP", function()
+    createPlayerESP()
+end)
+
+-- Speed Slider
+tab:CreateSlider("Speed", 16, 100, function(value)
+    humanoid.WalkSpeed = value
+end)
+
+-- FOV Slider
+tab:CreateSlider("FOV", 30, 120, function(value)
+    game.Workspace.CurrentCamera.FieldOfView = value
+end)
+
+-- Misc
+tab2:CreateButton("Discord", function()
+    print("discord.gg/decisions")  
+end)
+
+tab:Show()
