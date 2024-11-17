@@ -1,6 +1,6 @@
 local library = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/ShaddowScripts/Main/main/Library"))()
 
-local Main = library:CreateWindow("Main","Crimson")
+local Main = library:CreateWindow("Main", "Crimson")
 
 local tab = Main:CreateTab("Cheats")
 local tab2 = Main:CreateTab("Misc")
@@ -10,52 +10,82 @@ local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
--- Function to create ESP for players
+local defaultWalkSpeed = 16 -- Default walk speed
+local defaultFOV = 70 -- Default FOV
+
+-- Function to create ESP for a specific player
+local function createESPForPlayer(v)
+    if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+        -- Create Highlight for the player's character
+        local highlight = Instance.new("Highlight")
+        highlight.Parent = v.Character
+        highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Change this to your desired highlight color
+        highlight.OutlineColor = Color3.fromRGB(0, 0, 0) -- Outline color
+        highlight.FillTransparency = 0.5 -- Adjust transparency as needed
+
+        -- Create BillboardGui for player name
+        local BillboardGui = Instance.new('BillboardGui')
+        local TextLabel = Instance.new('TextLabel')
+
+        BillboardGui.Parent = v.Character.HumanoidRootPart
+        BillboardGui.AlwaysOnTop = true
+        BillboardGui.Size = UDim2.new(0, 100, 0, 50)
+        BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
+
+        TextLabel.Parent = BillboardGui
+        TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+        TextLabel.BackgroundTransparency = 1
+        TextLabel.Size = UDim2.new(1, 0, 1, 0)
+        TextLabel.Text = v.Name
+        TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- Change this to your desired text color
+        TextLabel.TextScaled = true
+    end
+end
+
+-- Function to create ESP for all players
 local function createPlayerESP()
     for _, v in pairs(Players:GetPlayers()) do
         if v ~= player then -- Don't ESP yourself
-            local BillboardGui = Instance.new('BillboardGui')
-            local TextLabel = Instance.new('TextLabel')
-
-            BillboardGui.Parent = v.Character:WaitForChild("HumanoidRootPart")
-            BillboardGui.AlwaysOnTop = true
-            BillboardGui.Size = UDim2.new(0, 100, 0, 50)
-            BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
-
-            TextLabel.Parent = BillboardGui
-            TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
-            TextLabel.BackgroundTransparency = 1
-            TextLabel.Size = UDim2.new(1, 0, 1, 0)
-            TextLabel.Text = v.Name
-            TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-            TextLabel.TextScaled = true
+            createESPForPlayer(v)
         end
     end
 end
 
-tab:CreateButton("Food Esp", function(a)
-    items = game:GetService("Workspace").GameObjects.Physical.Items
-    for i, v in pairs(items:GetDescendants()) do
+-- Connect to PlayerAdded and CharacterAdded events
+Players.PlayerAdded:Connect(function(v)
+    v.CharacterAdded:Connect(function()
+        createESPForPlayer(v)
+    end)
+end)
+
+-- Create ESP for existing players when the script runs
+for _, v in pairs(Players:GetPlayers()) do
+    if v ~= player then
+        createESPForPlayer(v)
+    end
+end
+
+tab:CreateButton("Food Esp", function()
+    local items = game:GetService("Workspace").GameObjects.Physical.Items
+    for _, v in pairs(items:GetDescendants()) do
         if v:IsA("MeshPart") then
-            if true then
-                local BillboardGui = Instance.new('BillboardGui')
-                local TextLabel = Instance.new('TextLabel')
-                
-                BillboardGui.Parent = v.Parent
-                BillboardGui.AlwaysOnTop = true
-                BillboardGui.Size = UDim2.new(0, 50, 0, 50)
-                BillboardGui.Enabled = true
-                BillboardGui.Active = true
-                BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
-                
-                TextLabel.Parent = BillboardGui
-                TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
-                TextLabel.BackgroundTransparency = 1
-                TextLabel.Size = UDim2.new(1, 0, 1, 0)
-                TextLabel.Text = "[ " .. tostring(v.Parent) .. " ]"
-                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-                TextLabel.TextScaled = false  
-            end
+            local BillboardGui = Instance.new('BillboardGui')
+            local TextLabel = Instance.new('TextLabel')
+            
+            BillboardGui.Parent = v.Parent
+            BillboardGui.AlwaysOnTop = true
+            BillboardGui.Size = UDim2.new(0, 50, 0, 50)
+            BillboardGui.Enabled = true
+            BillboardGui.Active = true
+            BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
+            
+            TextLabel.Parent = BillboardGui
+            TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+            TextLabel.BackgroundTransparency = 1
+            TextLabel.Size = UDim2.new(1, 0, 1, 0)
+            TextLabel.Text = "[ " .. tostring(v.Parent) .. " ]"
+            TextLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Change this to your desired Food ESP color
+            TextLabel.TextScaled = false  
         end
     end
 end)
@@ -63,16 +93,19 @@ end)
 -- Button to activate Player ESP
 tab:CreateButton("Player ESP", function()
     createPlayerESP()
+    print("Player ESP activated.")
 end)
 
 -- Speed Slider
 tab:CreateSlider("Speed", 16, 100, function(value)
     humanoid.WalkSpeed = value
+    defaultWalkSpeed = value -- Update the default speed
 end)
 
 -- FOV Slider
 tab:CreateSlider("FOV", 30, 120, function(value)
     game.Workspace.CurrentCamera.FieldOfView = value
+    defaultFOV = value -- Update the default FOV
 end)
 
 -- Misc
@@ -81,3 +114,10 @@ tab2:CreateButton("Discord", function()
 end)
 
 tab:Show()
+
+-- Maintain speed and FOV
+while true do
+    humanoid.WalkSpeed = defaultWalkSpeed
+    game.Workspace.CurrentCamera.FieldOfView = defaultFOV
+    wait(0.1) -- Adjust the wait time as needed
+end
